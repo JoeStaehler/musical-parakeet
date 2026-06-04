@@ -22,7 +22,7 @@ export default function HomePage() {
           <li key={study.slug}>
             <Link
               href={`/case-studies/${study.slug}`}
-              className="group flex gap-6 py-8 -mx-4 px-4 rounded-lg hover:bg-neutral-50 transition-colors"
+              className="group flex gap-6 py-8 -mx-4 px-4 rounded-lg hover:bg-green-100/80 transition-colors"
             >
               <span className="text-neutral-300 font-mono text-sm pt-0.5 w-6 shrink-0 select-none">
                 {String(i + 1).padStart(2, '0')}
