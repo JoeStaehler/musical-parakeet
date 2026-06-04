@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { caseStudies } from '@/data/case-studies'
+import BackLink from '@/components/BackLink'
 
 export function generateStaticParams() {
   return caseStudies.map((cs) => ({ slug: cs.slug }))
@@ -24,12 +25,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
   return (
     <main className="max-w-3xl mx-auto px-6 py-12 animate-slide-in">
       <nav className="mb-16">
-        <Link
-          href="/"
-          className="text-sm text-neutral-400 hover:text-neutral-900 transition-colors"
-        >
-          ← All Work
-        </Link>
+        <BackLink />
       </nav>
 
       <header className="mb-16">

@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { caseStudies } from '@/data/case-studies'
+import AnimatedMain from '@/components/AnimatedMain'
 
 export default function HomePage() {
   return (
-    <main className="max-w-3xl mx-auto px-6 py-16 min-h-screen flex flex-col">
+    <AnimatedMain className="max-w-3xl mx-auto px-6 py-16 min-h-screen flex flex-col">
       <header className="flex items-start justify-between mb-20">
         <div>
           <h1 className="text-2xl font-medium tracking-tight">Your Name</h1>
@@ -56,6 +57,6 @@ export default function HomePage() {
           </a>
         </div>
       </footer>
-    </main>
+    </AnimatedMain>
   )
 }
