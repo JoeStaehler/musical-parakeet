@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 
 export default function AnimatedMain({
   children,
@@ -11,7 +11,7 @@ export default function AnimatedMain({
 }) {
   const ref = useRef<HTMLElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const dir = sessionStorage.getItem('nav-direction')
