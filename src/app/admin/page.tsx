@@ -37,19 +37,20 @@ const blankStudy = (): CaseStudy => ({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-neutral-500 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-neutral-500 mb-1.5">{label}</label>
       {children}
     </div>
   )
 }
 
 const inputCls =
-  'w-full border border-neutral-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-neutral-400 transition-colors bg-white'
+  'w-full border border-neutral-200 rounded-md px-3 py-2.5 text-sm focus:outline-none focus:border-neutral-400 transition-colors bg-white'
 
 export default function AdminPage() {
   const [studies, setStudies] = useState<CaseStudy[]>([])
   const [activeSlug, setActiveSlug] = useState<string | null>(null)
   const [showExport, setShowExport] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(true)
   const [copied, setCopied] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -73,11 +74,18 @@ export default function AdminPage() {
     persist(studies.map((s) => (s.slug === activeSlug ? { ...s, [field]: value } : s)))
   }
 
+  const selectStudy = (slug: string) => {
+    setActiveSlug(slug)
+    setShowExport(false)
+    setShowSidebar(false)
+  }
+
   const addStudy = () => {
     const s = blankStudy()
     persist([...studies, s])
     setActiveSlug(s.slug)
     setShowExport(false)
+    setShowSidebar(false)
   }
 
   const deleteStudy = () => {
@@ -85,6 +93,7 @@ export default function AdminPage() {
     const updated = studies.filter((s) => s.slug !== activeSlug)
     persist(updated)
     setActiveSlug(updated[0]?.slug ?? null)
+    setShowSidebar(true)
   }
 
   const moveStudy = (dir: 'up' | 'down') => {
@@ -140,6 +149,7 @@ export default function AdminPage() {
     persist(defaultStudies)
     setActiveSlug(defaultStudies[0]?.slug ?? null)
     setShowExport(false)
+    setShowSidebar(true)
   }
 
   if (!mounted) return null
@@ -147,7 +157,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="bg-white border-b border-neutral-200 px-4 md:px-6 py-4 flex items-center justify-between shrink-0">
         <h1 className="font-medium text-sm">Admin Console</h1>
         <Link
           href="/"
@@ -158,17 +168,26 @@ export default function AdminPage() {
       </header>
 
       {/* Notice */}
-      <div className="bg-amber-50 border-b border-amber-100 px-6 py-2.5 shrink-0">
+      <div className="bg-amber-50 border-b border-amber-100 px-4 md:px-6 py-2.5 shrink-0">
         <p className="text-xs text-amber-800">
-          Changes save to your browser automatically. To update the live site, use{' '}
-          <strong>Export Data</strong> and replace the array in{' '}
-          <code className="font-mono">src/data/case-studies.ts</code>, then redeploy.
+          Changes save automatically.{' '}
+          <span className="hidden sm:inline">
+            To update the live site, use <strong>Export Data</strong> and replace the array in{' '}
+            <code className="font-mono">src/data/case-studies.ts</code>, then redeploy.
+          </span>
+          <span className="sm:hidden">Use Export Data to deploy changes.</span>
         </p>
       </div>
 
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-        <aside className="w-60 bg-white border-r border-neutral-200 flex flex-col shrink-0">
+        <aside
+          className={`
+            bg-white border-r border-neutral-200 flex flex-col shrink-0
+            w-full md:w-60
+            ${showSidebar ? 'flex' : 'hidden md:flex'}
+          `}
+        >
           <div className="px-4 py-3 border-b border-neutral-100">
             <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
               Case Studies
@@ -179,11 +198,8 @@ export default function AdminPage() {
             {studies.map((s) => (
               <button
                 key={s.slug}
-                onClick={() => {
-                  setActiveSlug(s.slug)
-                  setShowExport(false)
-                }}
-                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors truncate ${
+                onClick={() => selectStudy(s.slug)}
+                className={`w-full text-left px-3 py-3 md:py-2 rounded-md text-sm transition-colors truncate ${
                   s.slug === activeSlug && !showExport
                     ? 'bg-neutral-100 text-neutral-900 font-medium'
                     : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
@@ -197,13 +213,16 @@ export default function AdminPage() {
           <div className="p-3 border-t border-neutral-100 space-y-2">
             <button
               onClick={addStudy}
-              className="w-full py-2 px-3 text-sm bg-neutral-900 text-white rounded-md hover:bg-neutral-700 transition-colors"
+              className="w-full py-2.5 px-3 text-sm bg-neutral-900 text-white rounded-md hover:bg-neutral-700 transition-colors"
             >
               + Add Case Study
             </button>
             <button
-              onClick={() => setShowExport((v) => !v)}
-              className={`w-full py-2 px-3 text-sm border rounded-md transition-colors ${
+              onClick={() => {
+                setShowExport((v) => !v)
+                setShowSidebar(false)
+              }}
+              className={`w-full py-2.5 px-3 text-sm border rounded-md transition-colors ${
                 showExport
                   ? 'border-neutral-900 text-neutral-900 bg-neutral-50'
                   : 'border-neutral-200 text-neutral-700 hover:bg-neutral-50'
@@ -221,35 +240,56 @@ export default function AdminPage() {
         </aside>
 
         {/* Main area */}
-        <main className="flex-1 overflow-y-auto">
+        <main
+          className={`
+            flex-1 overflow-y-auto
+            ${showSidebar ? 'hidden md:block' : 'block'}
+          `}
+        >
+          {/* Mobile back button */}
+          <div className="md:hidden border-b border-neutral-100 bg-white px-4 py-3">
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+            >
+              ← All Case Studies
+            </button>
+          </div>
+
           {showExport ? (
-            <div className="p-8 max-w-3xl">
-              <div className="flex items-center justify-between mb-3">
+            <div className="p-4 md:p-8 max-w-3xl">
+              <div className="flex items-center justify-between mb-3 gap-3">
                 <h2 className="font-medium">Export Data</h2>
                 <button
                   onClick={copyExport}
-                  className="py-2 px-4 text-sm bg-neutral-900 text-white rounded-md hover:bg-neutral-700 transition-colors min-w-[130px]"
+                  className="py-2 px-4 text-sm bg-neutral-900 text-white rounded-md hover:bg-neutral-700 transition-colors shrink-0"
                 >
-                  {copied ? '✓ Copied!' : 'Copy to Clipboard'}
+                  {copied ? '✓ Copied!' : 'Copy'}
                 </button>
               </div>
               <p className="text-sm text-neutral-500 mb-5">
-                Replace the <code className="font-mono text-xs bg-neutral-100 px-1 py-0.5 rounded">caseStudies</code> array in{' '}
-                <code className="font-mono text-xs bg-neutral-100 px-1 py-0.5 rounded">src/data/case-studies.ts</code> with this JSON, then redeploy.
+                Replace the{' '}
+                <code className="font-mono text-xs bg-neutral-100 px-1 py-0.5 rounded">
+                  caseStudies
+                </code>{' '}
+                array in{' '}
+                <code className="font-mono text-xs bg-neutral-100 px-1 py-0.5 rounded">
+                  src/data/case-studies.ts
+                </code>{' '}
+                with this JSON, then redeploy.
               </p>
-              <pre className="bg-neutral-900 text-neutral-200 p-6 rounded-xl text-xs overflow-x-auto leading-relaxed font-mono">
+              <pre className="bg-neutral-900 text-neutral-200 p-4 md:p-6 rounded-xl text-xs overflow-x-auto leading-relaxed font-mono">
                 {exportJson}
               </pre>
             </div>
           ) : active ? (
-            <div className="p-8 max-w-2xl">
+            <div className="p-4 md:p-8 max-w-2xl">
               {/* Study header */}
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="font-medium">
-                  Editing:{' '}
+              <div className="flex items-center justify-between mb-6 md:mb-8 gap-3">
+                <h2 className="font-medium truncate">
                   <span className="text-neutral-500 font-normal">{active.title}</span>
                 </h2>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => moveStudy('up')}
                     title="Move up in list"
@@ -274,8 +314,8 @@ export default function AdminPage() {
               </div>
 
               {/* Study fields */}
-              <div className="space-y-5 pb-12 border-b border-neutral-100">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4 pb-8 border-b border-neutral-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Title">
                     <input
                       value={active.title}
@@ -298,7 +338,7 @@ export default function AdminPage() {
                     className={inputCls}
                   />
                 </Field>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Role">
                     <input
                       value={active.role}
@@ -325,15 +365,15 @@ export default function AdminPage() {
               </div>
 
               {/* Sections */}
-              <div className="pt-8">
-                <div className="flex items-center justify-between mb-5">
+              <div className="pt-6 md:pt-8">
+                <div className="flex items-center justify-between mb-4 md:mb-5">
                   <h3 className="font-medium text-sm">
                     Sections{' '}
                     <span className="text-neutral-400 font-normal">({active.sections.length})</span>
                   </h3>
                   <button
                     onClick={addSection}
-                    className="py-1.5 px-3 text-sm border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors"
+                    className="py-2 px-3 text-sm border border-neutral-200 rounded-md hover:bg-neutral-50 transition-colors"
                   >
                     + Add Section
                   </button>
@@ -357,7 +397,7 @@ export default function AdminPage() {
                   {active.sections.map((sec, sIdx) => (
                     <div
                       key={sec.id}
-                      className="border border-neutral-200 rounded-xl p-5 bg-white space-y-4"
+                      className="border border-neutral-200 rounded-xl p-4 md:p-5 bg-white space-y-4"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
@@ -366,21 +406,21 @@ export default function AdminPage() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => moveSection(sec.id, 'up')}
-                            className="p-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition-colors rounded"
+                            className="p-2 text-xs text-neutral-400 hover:text-neutral-700 transition-colors rounded"
                             title="Move up"
                           >
                             ↑
                           </button>
                           <button
                             onClick={() => moveSection(sec.id, 'down')}
-                            className="p-1.5 text-xs text-neutral-400 hover:text-neutral-700 transition-colors rounded"
+                            className="p-2 text-xs text-neutral-400 hover:text-neutral-700 transition-colors rounded"
                             title="Move down"
                           >
                             ↓
                           </button>
                           <button
                             onClick={() => deleteSection(sec.id)}
-                            className="p-1.5 text-xs text-neutral-400 hover:text-red-500 transition-colors rounded ml-1"
+                            className="p-2 text-xs text-neutral-400 hover:text-red-500 transition-colors rounded ml-1"
                             title="Delete section"
                           >
                             ✕
@@ -388,7 +428,7 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Field label="Title">
                           <input
                             value={sec.title}
@@ -426,7 +466,7 @@ export default function AdminPage() {
                             onChange={(e) =>
                               updateSection(sec.id, 'imageCaption', e.target.value)
                             }
-                            placeholder="Caption shown below the image placeholder"
+                            placeholder="Caption shown below the image"
                             className={inputCls}
                           />
                         </Field>
@@ -437,7 +477,7 @@ export default function AdminPage() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full text-neutral-400 text-sm">
+            <div className="flex items-center justify-center h-full text-neutral-400 text-sm p-8 text-center">
               Select a case study to edit, or add a new one.
             </div>
           )}
