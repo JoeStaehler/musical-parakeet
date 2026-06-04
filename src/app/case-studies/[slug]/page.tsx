@@ -22,7 +22,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
   const next = idx < caseStudies.length - 1 ? caseStudies[idx + 1] : null
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-12">
+    <main className="max-w-3xl mx-auto px-6 py-12 animate-slide-in">
       <nav className="mb-16">
         <Link
           href="/"
